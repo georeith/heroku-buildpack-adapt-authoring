@@ -54,6 +54,11 @@ npm install --production
 
 cp "$DIR/../lib/start-adapt-authoring-server.js" "$BUILD_DIR"
 
+useffmpeg='n'
+if [ -x "$(command -v ffmpeg)" ]; then
+    useffmpeg='y'
+fi
+
 if [ ! -f "$CACHE_DIR/adapt_authoring_tool_installed" ]; then
     echo "Skipping installation as already installed" | indent_title
 else
@@ -63,7 +68,7 @@ else
       --dataRoot "data" \
       --dbConnectionUri "${MONGODB_URI}" \
       --dbName "${MONGODB_NAME}" \
-      --install true \
+      --install y \
       --masterTenantName "${ADMIN_NAME}" \
       --masterTenantDisplayName "${ADMIN_DISPLAY_NAME}" \
       --serverName localhost \
@@ -72,8 +77,8 @@ else
       --suEmail "${ADMIN_EMAIL}" \
       --suPassword "${ADMIN_PASSWORD}" \
       --suRetypePassword "${ADMIN_PASSWORD}" \
-      --useConnectionUri true \
-      --useffmpeg false
+      --useConnectionUri y \
+      --useffmpeg $useffmpeg
     sed -i .bak -e 's!'"$( pwd -P )"'!/app/adapt_authoring!g' conf/config.json
     rm conf/config.json.bak
     touch "$CACHE_DIR/adapt_authoring_tool_installed"

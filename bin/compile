@@ -49,6 +49,7 @@ else
 fi
 
 cp "$DIR/../lib/install.sh" "$BUILD_DIR/install.sh"
+chmod u+x "$BUILD_DIR/install.sh"
 
 cd "$BUILD_DIR/adapt_authoring"
 npm install -g grunt-cli

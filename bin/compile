@@ -48,30 +48,8 @@ else
     echo "Installing required modules" | indent_title
 fi
 
+cp "$DIR/../lib/install.sh" "$BUILD_DIR/install.sh"
+
 cd "$BUILD_DIR/adapt_authoring"
 npm install -g grunt-cli
 npm install --production
-
-echo [ -f "$CACHE_DIR/adapt_authoring_tool_installed" ]
-if [ -f "$CACHE_DIR/adapt_authoring_tool_installed" ]; then
-    echo "Skipping installation as already installed" | indent_title
-else
-    echo "Beginning installation" | indent_title
-    cd "$BUILD_DIR/adapt_authoring"
-    yes "" | node install \
-      --dataRoot "data" \
-      --dbConnectionUri "${MONGODB_URI}" \
-      --dbName "${MONGODB_NAME}" \
-      --install true \
-      --masterTenantName "${ADMIN_NAME}" \
-      --masterTenantDisplayName "${ADMIN_DISPLAY_NAME}" \
-      --serverName localhost \
-      --serverPort ${PORT} \
-      --sessionSecret "${SESSION_SECRET}" \
-      --suEmail "${ADMIN_EMAIL}" \
-      --suPassword "${ADMIN_PASSWORD}" \
-      --suRetypePassword "${ADMIN_PASSWORD}" \
-      --useConnectionUri true \
-      --useffmpeg false
-    touch "$CACHE_DIR/adapt_authoring_tool_installed"
-fi

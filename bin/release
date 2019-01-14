@@ -5,6 +5,5 @@ cat << EOF
 addons:
   - mongolab
 default_process_types:
-  install: ./install.sh
-  web: node adapt_authoring/server
+  web: node start-adapt-authoring-server
 EOF

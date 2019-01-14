@@ -4,7 +4,7 @@ BUILD_DIR=${1:-"$DIR/.."}
 CACHE_DIR=${2:-"$DIR/.."}
 ENV_DIR=${3:-"$DIR/../env"}
 
-source "$DIR/../lib/functions.sh"
+source "$DIR/../helpers/functions.sh"
 
 variables=(
     'ADAPT_AUTHORING_TOOL_VERSION'
@@ -48,9 +48,33 @@ else
     echo "Installing required modules" | indent_title
 fi
 
-cp "$DIR/../lib/install.sh" "$BUILD_DIR/install.sh"
-chmod u+x "$BUILD_DIR/install.sh"
-
 cd "$BUILD_DIR/adapt_authoring"
 npm install -g grunt-cli
 npm install --production
+
+cp "$(cd "$DIR/../lib/"; pwd)/*" $(cd $BUILD_DIR; pwd)
+
+if [ ! -f "$CACHE_DIR/adapt_authoring_tool_installed" ]; then
+    echo "Skipping installation as already installed" | indent_title
+else
+    echo "Beginning installation" | indent_title
+    cd "$BUILD_DIR/adapt_authoring"
+    yes "" | node install \
+      --dataRoot "data" \
+      --dbConnectionUri "${MONGODB_URI}" \
+      --dbName "${MONGODB_NAME}" \
+      --install true \
+      --masterTenantName "${ADMIN_NAME}" \
+      --masterTenantDisplayName "${ADMIN_DISPLAY_NAME}" \
+      --serverName localhost \
+      --serverPort ${PORT} \
+      --sessionSecret "${SESSION_SECRET}" \
+      --suEmail "${ADMIN_EMAIL}" \
+      --suPassword "${ADMIN_PASSWORD}" \
+      --suRetypePassword "${ADMIN_PASSWORD}" \
+      --useConnectionUri true \
+      --useffmpeg false
+    sed -i .bak -e 's!'"$( pwd -P )"'!/app/adapt_authoring!g' conf/config.json
+    rm conf/config.json.bak
+    touch "$CACHE_DIR/adapt_authoring_tool_installed"
+fi

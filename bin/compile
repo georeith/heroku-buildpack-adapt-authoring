@@ -78,7 +78,7 @@ else
       --suPassword "${ADMIN_PASSWORD}" \
       --suRetypePassword "${ADMIN_PASSWORD}" \
       --useConnectionUri y \
-      --useffmpeg $useffmpeg
+      --useffmpeg $useffmpeg || grunt build:prod
     sed -i .bak -e 's!'"$( pwd -P )"'!/app/adapt_authoring!g' conf/config.json
     rm conf/config.json.bak
     touch "$CACHE_DIR/adapt_authoring_tool_installed"

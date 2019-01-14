@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+BUILD_DIR=${1:-"$DIR/.."}
+CACHE_DIR=${2:-"$DIR/.."}
+ENV_DIR=${3:-"$DIR/../env"}
+
+source "$DIR/../lib/functions.sh"
+
+variables=(
+    'ADAPT_AUTHORING_TOOL_VERSION'
+    'ADMIN_DISPLAY_NAME'
+    'ADMIN_EMAIL'
+    'ADMIN_NAME'
+    'ADMIN_PASSWORD'
+    'MONGODB_NAME'
+    'MONGODB_URI'
+    'PORT'
+    'SESSION_SECRET'
+)
+declare -A defaults
+defaults[ADAPT_AUTHORING_TOOL_VERSION]=0.6.1
+defaults[ADMIN_DISPLAY_NAME]='admin'
+defaults[ADMIN_EMAIL]=
+defaults[ADMIN_NAME]='admin'
+defaults[ADMIN_PASSWORD]='password'
+defaults[MONGODB_NAME]=
+defaults[MONGODB_URI]=
+defaults[PORT]=5000
+defaults[SESSION_SECRET]='sessionsecret'
+
+echo "Reading environment variables" | indent_title
+for variable in "${!defaults[@]}"; do
+    if [ -f "$ENV_DIR/$variable" ]; then
+        echo "$variable set" | indent_body
+        export "$variable=$(cat $ENV_DIR/$variable)"
+    else
+        echo "$variable not set - using default" | indent_body
+        export "$variable=${defaults[$variable]}"
+    fi
+done
+
+if [ -d "$BUILD_DIR/adapt_authoring" ]; then
+    echo "Skipping adapt authoring tool download" | indent_title
+else
+    echo "Downloading adapt authoring tool" | indent_title
+    cd $BUILD_DIR
+    git clone --branch v${ADAPT_AUTHORING_TOOL_VERSION} https://github.com/adaptlearning/adapt_authoring.git adapt_authoring
+    echo "Installing required modules" | indent_title
+fi
+
+cd "$BUILD_DIR/adapt_authoring"
+npm install -g grunt-cli
+npm install --production
+
+echo [ -f "$CACHE_DIR/adapt_authoring_tool_installed" ]
+if [ -f "$CACHE_DIR/adapt_authoring_tool_installed" ]; then
+    echo "Skipping installation as already installed" | indent_title
+else
+    echo "Beginning installation" | indent_title
+    cd "$BUILD_DIR/adapt_authoring"
+    yes "" | node install \
+      --dataRoot "data" \
+      --dbConnectionUri "${MONGODB_URI}" \
+      --dbName "${MONGODB_NAME}" \
+      --install true \
+      --masterTenantName "${ADMIN_NAME}" \
+      --masterTenantDisplayName "${ADMIN_DISPLAY_NAME}" \
+      --serverName localhost \
+      --serverPort ${PORT} \
+      --sessionSecret "${SESSION_SECRET}" \
+      --suEmail "${ADMIN_EMAIL}" \
+      --suPassword "${ADMIN_PASSWORD}" \
+      --suRetypePassword "${ADMIN_PASSWORD}" \
+      --useConnectionUri true \
+      --useffmpeg false
+    touch "$CACHE_DIR/adapt_authoring_tool_installed"
+fi

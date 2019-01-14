@@ -52,7 +52,7 @@ cd "$BUILD_DIR/adapt_authoring"
 npm install -g grunt-cli
 npm install --production
 
-cp "$(cd "$DIR/../lib/"; pwd)/*" $(cd $BUILD_DIR; pwd)
+cp "$DIR/../lib/start-adapt-authoring-server.js" "$BUILD_DIR"
 
 if [ ! -f "$CACHE_DIR/adapt_authoring_tool_installed" ]; then
     echo "Skipping installation as already installed" | indent_title
